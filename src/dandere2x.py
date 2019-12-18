@@ -31,7 +31,7 @@ import sys
 import threading
 import time
 
-from dandere2xlib.core.merge import merge_loop
+from dandere2xlib.core.merge import Merge
 from dandere2xlib.core.residual import residual_loop
 from dandere2xlib.frame_compressor import compress_frames
 from dandere2xlib.mindiskusage import MinDiskUsage
@@ -57,6 +57,7 @@ class Dandere2x:
         self.context = context
         self.jobs = {}
         self.min_disk_demon = None
+        self.merge_thread = Merge(self.context)
         self.waifu2x = self._get_waifu2x_class(self.context.waifu2x_type)
 
     def __extract_frames(self):
@@ -70,7 +71,7 @@ class Dandere2x:
         self.jobs['compress_frames_thread'] = threading.Thread(target=compress_frames, args=([self.context]),
                                                                daemon=True)
         self.jobs['dandere2xcpp_thread'] = Dandere2xCppWrapper(self.context)
-        self.jobs['merge_thread'] = threading.Thread(target=merge_loop, args=([self.context]),
+        self.jobs['merge_thread'] = threading.Thread(target=self.merge_thread.merge_loop, args=([]),
                                                      daemon=True)
         self.jobs['residual_thread'] = threading.Thread(target=residual_loop, args=([self.context]),
                                                         daemon=True)
