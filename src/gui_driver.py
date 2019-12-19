@@ -16,19 +16,23 @@ class QtDandere2xThread(QtCore.QThread):
     def __init__(self, parent, config_yaml):
         super(QtDandere2xThread, self).__init__(parent)
         self.config_yaml = config_yaml
+        self.d = Dandere2x_Gui_Wrapper(self.config_yaml)
 
     def run(self):
-        d = Dandere2x_Gui_Wrapper(self.config_yaml)
-
         try:
-            d.start()
+            self.d.start()
 
         except:
             print("dandere2x could not start.. trying again. If it fails, try running as admin..")
-            d.start()
 
         self.finished.emit()
 
+    def killthread(self):
+        self.thread.stop()
+        print('How do I do this')
+
+    def suspend_dandere2x(self):
+        self.d.suspend_state()
 
 class AppWindow(QMainWindow):
     """
@@ -78,6 +82,8 @@ class AppWindow(QMainWindow):
 
     def suspend_button(self):
         print("suspend button was pressed")
+        self.thread.suspend_dandere2x()
+        self.thread.killthread()
 
 
 
