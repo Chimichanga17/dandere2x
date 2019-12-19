@@ -18,6 +18,10 @@ class Dandere2x_Gui_Wrapper:
     def __init__(self, config_yaml):
         self.config_json = config_yaml
         self.context = Context(config_yaml)
+        self.dandere2x = Dandere2x(self.context)
+
+    def suspend_state(self):
+        self.dandere2x.merge_thread.pipe.wait_finish_stop_pipe()
 
     def start(self):
         print(self.context.workspace)
@@ -42,12 +46,11 @@ class Dandere2x_Gui_Wrapper:
 
         # starting shit
         print("Starting Dandere2x")
-        d = Dandere2x(self.context)
-        d.run_concurrent()
-        d.context.close_logger()
+        self.dandere2x.run_concurrent()
+        self.dandere2x.context.close_logger()
 
-        if d.context.config_yaml['dandere2x']['developer_settings']['gui_delete_workspace_after']:
-            d.delete_workspace_files()
+        if self.dandere2x.context.config_yaml['dandere2x']['developer_settings']['gui_delete_workspace_after']:
+            self.dandere2x.delete_workspace_files()
 
         print("Dandere2x GUI Run Finished Successfully")
 
