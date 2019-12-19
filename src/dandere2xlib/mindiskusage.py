@@ -9,7 +9,7 @@ from dandere2xlib.utils.dandere2x_utils import get_lexicon_value
 from wrappers.ffmpeg.progressive_frame_extractor_ffmpeg import ProgressiveFramesExtractorFFMPEG
 
 
-class MinDiskUsage:
+class MinDiskUsage(threading.Thread):
     """
     A class to facilitate the actions needed to operate min_disk_usage.
 
@@ -20,11 +20,16 @@ class MinDiskUsage:
     """
 
     def __init__(self, context: Context):
-
+        self.is_alive = True
         self.context = context
         self.max_frames_ahead = self.context.max_frames_ahead
         self.frame_count = context.frame_count
         self.progressive_frame_extractor = ProgressiveFramesExtractorFFMPEG(self.context, self.context.input_file)
+        threading.Thread.__init__(self)
+
+
+    def kill(self):
+        self.is_alive = False
 
     """
     todo:
@@ -40,6 +45,10 @@ class MinDiskUsage:
         """
         logger = logging.getLogger(__name__)
         for x in range(1, self.frame_count - self.context.max_frames_ahead + 1):
+
+            if not self.is_alive:
+                break
+
             logger.info("on frame x: " + str(x))
             # wait for signal to get ahead of MinDiskUsage
             while x >= self.context.signal_merged_count:

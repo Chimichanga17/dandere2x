@@ -78,6 +78,7 @@ class Pipe():
         print("\n    Waiting for the ffmpeg-pipe-encode buffer list to end....")
 
         while len(self.images_to_pipe) > 0:
+            print("i am still active")
             time.sleep(0.05)
 
         self.pipe_running = False

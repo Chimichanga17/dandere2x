@@ -28,8 +28,7 @@ class QtDandere2xThread(QtCore.QThread):
         self.finished.emit()
 
     def killthread(self):
-        self.thread.stop()
-        print('How do I do this')
+        self.terminate()
 
     def suspend_dandere2x(self):
         self.d.suspend_state()

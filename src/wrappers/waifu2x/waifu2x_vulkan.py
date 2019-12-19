@@ -4,6 +4,7 @@ import os
 import subprocess
 import threading
 import time
+import psutil
 
 from context import Context
 from dandere2xlib.utils.dandere2x_utils import file_exists, get_lexicon_value, rename_file, wait_on_either_file
@@ -27,6 +28,7 @@ class Waifu2xVulkan(threading.Thread):
         self.workspace = context.workspace
         self.context = context
         self.signal_upscale = True
+        self.active_waifu2x_subprocess = None
 
         self.waifu2x_vulkan_upscale_frame = [self.waifu2x_ncnn_vulkan_file_path,
                                              "-i", "[input_file]",
@@ -99,11 +101,22 @@ class Waifu2xVulkan(threading.Thread):
         remove_when_upscaled_thread.start()
 
         # while there are pictures that have yet to be upscaled, keep calling the upscale command
-        while self.signal_upscale:
+        while self.signal_upscale and self.is_alive:
             console_output.write(str(exec_command))
             subprocess.call(exec_command, shell=False, stderr=console_output, stdout=console_output)
 
         console_output.close()
+
+    def kill(self):
+        self.is_alive = False
+
+        try:
+            d2xcpp_psutil = psutil.Process(self.active_waifu2x_subprocess.pid)
+            if psutil.pid_exists(d2xcpp_psutil.pid):
+                d2xcpp_psutil.kill()
+        except:
+            psutil.NoSuchProcess
+
 
     def upscale_file(self, input_file: str, output_file: str):
         """
@@ -127,7 +140,8 @@ class Waifu2xVulkan(threading.Thread):
 
         console_output = open(self.context.console_output_dir + "vulkan_upscale_frame.txt", "w")
         console_output.write(str(exec_command))
-        subprocess.call(exec_command, shell=False, stderr=console_output, stdout=console_output)
+        self.active_waifu2x_subprocess = subprocess.Popen(exec_command, shell=False, stderr=console_output, stdout=console_output)
+        self.active_waifu2x_subprocess.wait()
         console_output.close()
 
     def __remove_once_upscaled_then_stop(self):

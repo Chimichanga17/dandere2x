@@ -2,12 +2,13 @@
 # -*- coding: utf-8 -*-
 import logging
 import math
+import threading
 
 from context import Context
 from dandere2xlib.utils.dandere2x_utils import get_lexicon_value, get_list_from_file
 from wrappers.frame.frame import DisplacementVector, Frame
 
-class Residual:
+class Residual(threading.Thread):
 
     def __init__(self, context):
         self.context = context
@@ -27,10 +28,28 @@ class Residual:
         self.temp_image = context.temp_image_folder + "tempimage.jpg"
         self.logger = logging.getLogger(__name__)
 
-    def residual_loop(self):
+        threading.Thread.__init__(self)
+        self.is_alive = True
+
+    def kill(self):
+        self.is_alive = False
+
+    def run(self):
         # for every frame in the video, create a residual_frame given the text files.
         for x in range(1, self.frame_count):
+
+            from dandere2xlib.utils.dandere2x_utils import file_exists
+            import time
+
+            while not file_exists(self.input_frames_dir + "frame" + str(x + 1) + self.extension_type) and self.is_alive:
+                time.sleep(.05)
+                print('waiting in res')
+
+            if not self.is_alive:
+                return
+
             f1 = Frame()
+            print("waiting on file lol")
             f1.load_from_string_wait(self.input_frames_dir + "frame" + str(x + 1) + self.extension_type)
 
             # Load the neccecary lists to compute this iteration of residual making

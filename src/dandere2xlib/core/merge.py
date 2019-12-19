@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import logging
+import threading
 
 from context import Context
 from dandere2xlib.core.plugins.correction import correct_image
@@ -12,7 +13,7 @@ from wrappers.frame.asyncframe import AsyncFrameWrite, AsyncFrameRead
 from wrappers.frame.frame import Frame
 
 
-class Merge:
+class Merge(threading.Thread):
     """
     Description:
         - This class is the driver for merging all the files that need to be merged together.
@@ -22,6 +23,8 @@ class Merge:
     """
 
     def __init__(self, context: Context):
+        threading.Thread.__init__(self)
+
         self.context = context
         # load variables from context
         self.workspace = context.workspace
@@ -36,6 +39,7 @@ class Merge:
         self.nosound_file = context.nosound_file
         self.preserve_frames = context.preserve_frames
         self.logger = logging.getLogger(__name__)
+        self.is_alive = True
 
         # setup the pipe for merging
 
@@ -89,7 +93,10 @@ class Merge:
 
         return out_image
 
-    def merge_loop(self):
+    def kill(self):
+        self.is_alive = False
+
+    def run(self):
         # Load the genesis image + the first upscaled image.
         frame_previous = Frame()
         frame_previous.load_from_string_wait(self.merged_dir + "merged_" + str(1) + self.extension_type)
@@ -101,6 +108,9 @@ class Merge:
 
         last_frame = False
         for x in range(1, self.frame_count):
+
+            if not self.is_alive:
+                break
 
             ###################################
             # Loop-iteration pre-requirements #

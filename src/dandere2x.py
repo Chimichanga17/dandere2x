@@ -33,9 +33,9 @@ import time
 
 from dandere2xlib.core.merge import Merge
 from dandere2xlib.core.residual import Residual
-from dandere2xlib.frame_compressor import compress_frames
+from dandere2xlib.frame_compressor import Compress_Frames
 from dandere2xlib.mindiskusage import MinDiskUsage
-from dandere2xlib.status import print_status
+from dandere2xlib.status import Status
 from dandere2xlib.utils.dandere2x_utils import delete_directories, create_directories
 from dandere2xlib.utils.dandere2x_utils import valid_input_resolution, file_exists
 from wrappers.dandere2x_cpp import Dandere2xCppWrapper
@@ -60,6 +60,9 @@ class Dandere2x:
         self.merge_thread = Merge(self.context)
         self.residual_thread = Residual(self.context)
         self.waifu2x = self._get_waifu2x_class(self.context.waifu2x_type)
+        self.compress_frames_thread = Compress_Frames(self.context)
+        self.dandere2x_cpp_thread = Dandere2xCppWrapper(self.context)
+        self.status_thread = Status(context)
 
     def __extract_frames(self):
 
@@ -69,22 +72,19 @@ class Dandere2x:
             extract_frames(self.context, self.context.input_file)
 
     def __setup_jobs(self):
-        self.jobs['compress_frames_thread'] = threading.Thread(target=compress_frames, args=([self.context]),
-                                                               daemon=True)
-        self.jobs['dandere2xcpp_thread'] = Dandere2xCppWrapper(self.context)
-        self.jobs['merge_thread'] = threading.Thread(target=self.merge_thread.merge_loop, args=([]),
-                                                     daemon=True)
-        self.jobs['residual_thread'] = threading.Thread(target=self.residual_thread.residual_loop, args=([]),
-                                                        daemon=True)
+
+        # need to not rely on threading.thread here, need to make them classes
+        self.jobs['compress_frames_thread'] = self.compress_frames_thread
+        self.jobs['dandere2xcpp_thread'] = self.dandere2x_cpp_thread
+        self.jobs['merge_thread'] = self.merge_thread
+        self.jobs['residual_thread'] = self.residual_thread
 
         self.jobs['waifu2x_thread'] = self.waifu2x
-        self.jobs['status_thread'] = threading.Thread(target=print_status, args=([self.context]),
-                                                      daemon=True)
+        self.jobs['status_thread'] = self.status_thread
 
         if self.context.use_min_disk:
             self.min_disk_demon = MinDiskUsage(self.context)
-            self.jobs['min_disk_thread'] = threading.Thread(target=self.min_disk_demon.run,
-                                                            daemon=True)
+            self.jobs['min_disk_thread'] = self.min_disk_demon
 
     def __upscale_first_frame(self):
 
@@ -128,16 +128,59 @@ class Dandere2x:
         self.__upscale_first_frame()
 
         # run and wait for all the dandere2x threads.
-        for job in self.jobs:
-            self.jobs[job].start()
-            logging.info("Starting new %s process" % job)
+        # for job in self.jobs:
+        #     self.jobs[job].start()
+        #     logging.info("Starting new %s process" % job)
 
-        for job in self.jobs:
-            self.jobs[job].join()
+        self.compress_frames_thread.start()
+        self.dandere2x_cpp_thread.start()
+        self.merge_thread.start()
+        self.residual_thread.start()
+        self.waifu2x.start()
+        self.status_thread.start()
 
-            logging.info("%s process thread joined" % job)
+        time.sleep(5)
+        # print("killing da jobs")
+        # for job in self.jobs:
+        #     print("killing " + str(job))
+        #     self.jobs[job].kill()
+        #
+        #     logging.info("%s process thread joined" % job)
+
+
+        # there's an issue where even if we call kill, there's wait_on_files inside of the
+        # threads which are holding up a proper dandere2x closure.
+
+        self.compress_frames_thread.kill()
+        self.dandere2x_cpp_thread.kill()
+        self.merge_thread.kill()
+        self.residual_thread.kill()
+        self.waifu2x.kill()
+        self.status_thread.kill()
+
+        print('waiting on compress')
+        self.compress_frames_thread.join()
+        print('waiting on cpp')
+        self.dandere2x_cpp_thread.join()
+        print('waiting on merge')
+        self.merge_thread.join()
+        print('waiting on res')
+        self.residual_thread.join()
+        print('waiting on waifu2x')
+        self.waifu2x.join()
+        print('waiting on status')
+        self.status_thread.join()
+        print("status finished")
+
+
+
+        # for job in self.jobs:
+        #     self.jobs[job].join()
+        #
+        #     logging.info("%s process thread joined" % job)
 
         self.context.logger.info("All threaded processes have finished")
+
 
     def _get_waifu2x_class(self, name: str):
 

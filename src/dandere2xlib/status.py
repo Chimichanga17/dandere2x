@@ -1,5 +1,6 @@
 import sys
 import time
+import threading
 
 from context import Context
 
@@ -8,33 +9,46 @@ from context import Context
 # This could probably be improved visually for the user.. it's not the most pleasing to look at
 # Also, in a very niche case the GUI didn't catch up with the deletion of files, so it ceased updating
 
-def print_status(context: Context):
-    workspace = context.workspace
-    extension_type = context.extension_type
-    frame_count = context.frame_count
 
-    last_10 = [0]
+class Status(threading.Thread):
 
-    for x in range(1, frame_count - 1):
-        percent = int((x / frame_count) * 100)
+    def __init__(self, context: Context):
+        self.context = context
+        self.workspace = context.workspace
+        self.extension_type = context.extension_type
+        self.frame_count = context.frame_count
+        self.is_alive = True
 
-        average = 0
-        for time_count in last_10:
-            average = average + time_count
+        threading.Thread.__init__(self)
 
-        average = round(average / len(last_10), 2)
+    def kill(self):
+        self.is_alive = False
 
-        sys.stdout.write('\r')
-        sys.stdout.write("Frame: [%s] %i%%    Average of Last 10 Frames: %s sec / frame" % (x, percent, average))
+    def run(self):
 
-        if len(last_10) == 10:
-            last_10.pop(0)
+        last_10 = [0]
 
-        now = time.time()
+        for x in range(1, self.frame_count - 1):
 
-        while x >= context.signal_merged_count:
-            time.sleep(.00001)
+            if not self.is_alive:
+                break
 
-        later = time.time()
-        difference = float(later - now)
-        last_10.append(difference)
+            percent = int((x / self.frame_count) * 100)
+
+            average = 0
+            for time_count in last_10:
+                average = average + time_count
+
+            average = round(average / len(last_10), 2)
+
+            sys.stdout.write('\r')
+            sys.stdout.write("Frame: [%s] %i%%    Average of Last 10 Frames: %s sec / frame" % (x, percent, average))
+
+            if len(last_10) == 10:
+                last_10.pop(0)
+
+            now = time.time()
+
+            while x >= self.context.signal_merged_count:
+                time.sleep(.00001)
+
