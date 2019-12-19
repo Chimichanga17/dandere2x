@@ -76,12 +76,18 @@ class AppWindow(QMainWindow):
         self.refresh_scale_factor()
         self.show()
 
+    def suspend_button(self):
+        print("suspend button was pressed")
+
+
+
     # Setup connections for each button
     def config_buttons(self):
         self.ui.select_video_button.clicked.connect(self.press_select_video_button)
         self.ui.select_output_button.clicked.connect(self.press_select_output_button)
         self.ui.upscale_button.clicked.connect(self.press_upscale_button)
         self.ui.waifu2x_type_combo_box.currentIndexChanged.connect(self.refresh_scale_factor)
+        self.ui.suspend_button.clicked.connect(self.suspend_button)
 
         # The following connects are to re-adjust the file name
 
