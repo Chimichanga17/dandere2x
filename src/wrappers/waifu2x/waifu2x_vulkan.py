@@ -29,6 +29,7 @@ class Waifu2xVulkan(threading.Thread):
         self.context = context
         self.signal_upscale = True
         self.active_waifu2x_subprocess = None
+        self._is_stopped = False
 
         self.waifu2x_vulkan_upscale_frame = [self.waifu2x_ncnn_vulkan_file_path,
                                              "-i", "[input_file]",
@@ -117,6 +118,8 @@ class Waifu2xVulkan(threading.Thread):
         except:
             psutil.NoSuchProcess
 
+    def is_alive(self):
+        return self.is_alive
 
     def upscale_file(self, input_file: str, output_file: str):
         """

@@ -25,8 +25,13 @@ class Dandere2xCppWrapper(threading.Thread):
         self.residual_images_dir = context.residual_images_dir
         self.log_dir = context.console_output_dir
         self.dandere2x_cpp_subprocess = None
+        self._is_stopped = False
 
         threading.Thread.__init__(self)
+
+    def is_alive(self):
+        return self.is_alive
+
 
     def kill(self):
         d2xcpp_psutil = psutil.Process(self.dandere2x_cpp_subprocess.pid)

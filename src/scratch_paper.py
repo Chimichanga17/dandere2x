@@ -19,18 +19,19 @@ def main():
     start = time.time()
 
     # get config based on OS
-    configfile = "dandere2x_%s.yaml" % get_operating_system()
-
-    # load yaml
-
-    with open(configfile, "r") as read_file:
-        config = yaml.safe_load(read_file)
-
-    context = Context(config)
-
-    d2xcpp = Dandere2xCppWrapper(context)
-    d2xcpp.run()
-
+    # configfile = "dandere2x_%s.yaml" % get_operating_system()
+    #
+    # # load yaml
+    #
+    # with open(configfile, "r") as read_file:
+    #     config = yaml.safe_load(read_file)
+    #
+    # context = Context(config)
+    #
+    # d2xcpp = Dandere2xCppWrapper(context)
+    # d2xcpp.run()
+    import threading
+    print(threading.enumerate())
 
 
 

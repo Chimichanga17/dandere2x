@@ -109,6 +109,9 @@ class Dandere2x:
         Starts the dandere2x_python process at large.
         """
 
+        print("threading at start of runtime")
+        print(threading.enumerate())
+
         # directories need to be created before we do anything
         create_directories(self.context.directories)
 
@@ -131,6 +134,9 @@ class Dandere2x:
         #     self.jobs[job].start()
         #     logging.info("Starting new %s process" % job)
 
+        print("threading before thread calls")
+        print(threading.enumerate())
+
         self.compress_frames_thread.start()
         self.dandere2x_cpp_thread.start()
         self.merge_thread.start()
@@ -138,7 +144,11 @@ class Dandere2x:
         self.waifu2x.start()
         self.status_thread.start()
 
+
         time.sleep(5)
+
+        print("threading after sleep calls")
+        print(str(threading.enumerate()))
         # print("killing da jobs")
         # for job in self.jobs:
         #     print("killing " + str(job))
@@ -150,28 +160,32 @@ class Dandere2x:
         # there's an issue where even if we call kill, there's wait_on_files inside of the
         # threads which are holding up a proper dandere2x closure.
 
-        self.compress_frames_thread.kill()
-        self.dandere2x_cpp_thread.kill()
-        self.merge_thread.kill()
+        print("killing all da jobs")
+
+
+        print('waiting on res')
         self.residual_thread.kill()
+        self.residual_thread.join()
+
+        print('waiting on merge')
+        self.merge_thread.kill()
+        self.merge_thread.join()
+
+        print('waiting on waifu2x')
         self.waifu2x.kill()
+        self.waifu2x.join()
+
+        print('waiting on cpp')
+        self.dandere2x_cpp_thread.kill()
+        self.dandere2x_cpp_thread.join()
+
+        print('waiting on status')
         self.status_thread.kill()
+        self.status_thread.join()
 
         print('waiting on compress')
+        self.compress_frames_thread.kill()
         self.compress_frames_thread.join()
-        print('waiting on cpp')
-        self.dandere2x_cpp_thread.join()
-        print('waiting on merge')
-        self.merge_thread.join()
-        print('waiting on res')
-        self.residual_thread.join()
-        print('waiting on waifu2x')
-        self.waifu2x.join()
-        print('waiting on status')
-        self.status_thread.join()
-        print("status finished")
-
-
 
         # for job in self.jobs:
         #     self.jobs[job].join()
@@ -179,6 +193,7 @@ class Dandere2x:
         #     logging.info("%s process thread joined" % job)
 
         self.context.logger.info("All threaded processes have finished")
+        print("everything finished")
 
 
     def _get_waifu2x_class(self, name: str):

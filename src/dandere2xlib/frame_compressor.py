@@ -19,9 +19,13 @@ class Compress_Frames(threading.Thread):
         self.compressed_moving_dir = context.compressed_moving_dir
         self.quality_minimum = context.quality_minimum
         self.extension_type = context.extension_type
+        self._is_stopped = False
 
     def kill(self):
         self.is_alive = False
+
+    def is_alive(self):
+        return self.is_alive
 
     def run(self):
         # start from 1 because ffmpeg's extracted frames starts from 1

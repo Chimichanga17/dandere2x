@@ -27,12 +27,16 @@ class Residual(threading.Thread):
         self.debug = context.debug
         self.temp_image = context.temp_image_folder + "tempimage.jpg"
         self.logger = logging.getLogger(__name__)
+        self._is_stopped = False
 
         threading.Thread.__init__(self)
         self.is_alive = True
 
     def kill(self):
         self.is_alive = False
+
+    def is_alive(self):
+        return self.is_alive
 
     def run(self):
         # for every frame in the video, create a residual_frame given the text files.

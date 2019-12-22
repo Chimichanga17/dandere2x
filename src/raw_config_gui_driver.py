@@ -31,6 +31,11 @@ def main():
 
     print("\n Total runtime duration:", time.time() - start)
 
+    import threading
+
+    print(threading.enumerate())
+
+
 
 if __name__ == "__main__":
     main()

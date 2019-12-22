@@ -18,11 +18,15 @@ class Status(threading.Thread):
         self.extension_type = context.extension_type
         self.frame_count = context.frame_count
         self.is_alive = True
+        self._is_stopped = False
 
         threading.Thread.__init__(self)
 
     def kill(self):
         self.is_alive = False
+
+    def is_alive(self):
+        return self.is_alive
 
     def run(self):
 
@@ -49,6 +53,6 @@ class Status(threading.Thread):
 
             now = time.time()
 
-            while x >= self.context.signal_merged_count:
+            while x >= self.context.signal_merged_count and self.is_alive:
                 time.sleep(.00001)
 
