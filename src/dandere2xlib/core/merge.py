@@ -74,15 +74,24 @@ def merge_loop(context: Context):
         if x == frame_count - 1:
             last_frame = True
 
+<<<<<<< Updated upstream
         # Pre-load the next iteration of the loop image ahead of time, if we're not on the last frame.
         if not last_frame:
             background_frame_load = AsyncFrameRead(upscaled_dir + "output_" + get_lexicon_value(6, x + 1) + ".png")
             background_frame_load.start()
+=======
+        self.pipe.start_pipe_thread()
+        # Load the genesis image + the first upscaled image.
+        frame_previous = Frame()
+        frame_previous.load_from_string_wait(self.merged_dir + "merged_" + str(100) + self.extension_type,
+                                             self.cancel_token)
+>>>>>>> Stashed changes
 
         #######################
         # Loop-iteration Core #
         #######################
 
+<<<<<<< Updated upstream
         logger.info("Upscaling frame " + str(x))
 
         # Load the needed vectors to create the merged image.
@@ -90,6 +99,14 @@ def merge_loop(context: Context):
         residual_data_list = get_list_from_file(residual_data_dir + "residual_" + str(x) + ".txt")
         correction_data_list = get_list_from_file(correction_data_dir + "correction_" + str(x) + ".txt")
         fade_data_list = get_list_from_file(fade_data_dir + "fade_" + str(x) + ".txt")
+=======
+        f1 = Frame()
+        f1.load_from_string_wait(self.upscaled_dir + "output_" + get_lexicon_value(6, 100) + ".png",
+                                 self.cancel_token)
+
+        last_frame = False
+        for x in range(100, self.frame_count):
+>>>>>>> Stashed changes
 
         # Create the actual image itself.
         frame_next = make_merge_image(context, f1, frame_previous,

@@ -32,8 +32,38 @@ def print_status(context: Context):
 
         now = time.time()
 
+<<<<<<< Updated upstream
         while x >= context.signal_merged_count:
             time.sleep(.00001)
+=======
+    def run(self):
+
+        last_10 = [0]
+
+        for x in range(100, self.frame_count - 1):
+
+            if not self.is_alive:
+                break
+
+            percent = int((x / self.frame_count) * 100)
+
+            average = 0
+            for time_count in last_10:
+                average = average + time_count
+
+            average = round(average / len(last_10), 2)
+
+            sys.stdout.write('\r')
+            sys.stdout.write("Frame: [%s] %i%%    Average of Last 10 Frames: %s sec / frame" % (x, percent, average))
+
+            if len(last_10) == 10:
+                last_10.pop(0)
+
+            now = time.time()
+
+            while x >= self.context.signal_merged_count and self.alive:
+                time.sleep(.00001)
+>>>>>>> Stashed changes
 
         later = time.time()
         difference = float(later - now)

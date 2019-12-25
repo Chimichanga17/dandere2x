@@ -32,8 +32,8 @@ class Dandere2xCppWrapper(threading.Thread):
                 str(self.frame_count),
                 str(self.block_size),
                 str(self.step_size),
-                "n",
-                str(1),
+                "r",
+                str(100),
                 self.extension_type]
 
         logger.info(exec)

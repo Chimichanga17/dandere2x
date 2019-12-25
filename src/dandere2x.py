@@ -62,6 +62,7 @@ class Dandere2x:
     def __extract_frames(self):
 
         if self.context.use_min_disk:
+            self.min_disk_demon.progressive_frame_extractor.extract_frames_to(100)
             self.min_disk_demon.extract_initial_frames()
         elif not self.context.use_min_disk:
             extract_frames(self.context, self.context.input_file)
@@ -87,10 +88,10 @@ class Dandere2x:
     def __upscale_first_frame(self):
 
         one_frame_time = time.time()
-        self.waifu2x.upscale_file(input_file=self.context.input_frames_dir + "frame1" + self.context.extension_type,
-                                  output_file=self.context.merged_dir + "merged_1" + self.context.extension_type)
+        self.waifu2x.upscale_file(input_file=self.context.input_frames_dir + "frame100" + self.context.extension_type,
+                                  output_file=self.context.merged_dir + "merged_100" + self.context.extension_type)
 
-        if not file_exists(self.context.merged_dir + "merged_1" + self.context.extension_type):
+        if not file_exists(self.context.merged_dir + "merged_100" + self.context.extension_type):
             """ 
             Ensure the first file was able to get upscaled. We literally cannot continue if it doesn't.
             """
@@ -125,9 +126,76 @@ class Dandere2x:
         self.__upscale_first_frame()
 
         # run and wait for all the dandere2x threads.
+<<<<<<< Updated upstream
         for job in self.jobs:
             self.jobs[job].start()
             logging.info("Starting new %s process" % job)
+=======
+        # for job in self.jobs:
+        #     self.jobs[job].start()
+        #     logging.info("Starting new %s process" % job)
+
+        print("threading before thread calls")
+        print(threading.enumerate())
+
+        self.compress_frames_thread.start()
+        self.dandere2x_cpp_thread.start()
+        self.merge_thread.start()
+        self.residual_thread.start()
+        self.waifu2x.start()
+        self.status_thread.start()
+        self.min_disk_demon.start()
+
+        #time.sleep(10)
+
+
+        # print("killing da jobs")
+        # for job in self.jobs:
+        #     print("killing " + str(job))
+        #     self.jobs[job].kill()
+        #
+        #     logging.info("%s process thread joined" % job)
+
+
+        # there's an issue where even if we call kill, there's wait_on_files inside of the
+        # threads which are holding up a proper dandere2x closure.
+
+
+        print("killing all da jobs")
+        #self.residual_thread.join()
+        #self.min_disk_demon.kill()
+        self.min_disk_demon.join()
+
+
+        # print('waiting on res')
+        #self.residual_thread.kill()
+        self.residual_thread.join()
+        #
+        # print('waiting on merge')
+        #self.merge_thread.kill()
+        self.merge_thread.join()
+        #
+        # print('waiting on waifu2x')
+        #self.waifu2x.kill()
+        self.waifu2x.join()
+        #
+        # print('waiting on cpp')
+        #self.dandere2x_cpp_thread.kill()
+        self.dandere2x_cpp_thread.join()
+        #
+        # print('waiting on status')
+        #self.status_thread.kill()
+        self.status_thread.join()
+        #
+        # print('waiting on compress')
+        #self.compress_frames_thread.kill()
+        self.compress_frames_thread.join()
+
+        # for job in self.jobs:
+        #     self.jobs[job].join()
+        #
+        #     logging.info("%s process thread joined" % job)
+>>>>>>> Stashed changes
 
         for job in self.jobs:
             self.jobs[job].join()

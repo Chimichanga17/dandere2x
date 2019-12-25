@@ -28,9 +28,35 @@ class ProgressiveFramesExtractorFFMPEG:
         logger = logging.getLogger(__name__)
         frame_rate = context.frame_rate
 
+<<<<<<< Updated upstream
         extract_frames_command = [context.ffmpeg_dir,
                                   "-hwaccel", context.hwaccel,
                                   "-i", input_file]
+=======
+        self.P = None
+        self.pause_resume = None
+    #
+    #
+    def extract_frames_to(self, stop_frame: int):
+
+        self.count = stop_frame
+
+        # Resume the thread in order to produce a new frame.
+        self.pause_resume.resume()
+        # Although the file may exist, there are niche conditions in which the file on disk is
+        # not processable. Make sure the image is proccessible before killing the signal.
+        while not file_exists(self.input_frames_dir + "frame" + str(self.count) + self.extension_type):
+            time.sleep(.00001)
+
+        while file_is_empty(self.input_frames_dir + "frame" + str(self.count) + self.extension_type):
+            time.sleep(.00001)
+
+    def start_task(self):
+
+        extract_frames_command = [self.context.ffmpeg_dir,
+                                  "-hwaccel", self.context.hwaccel,
+                                  "-i", self.input_file]
+>>>>>>> Stashed changes
 
         extract_frames_options = \
             get_options_from_section(context.config_yaml["ffmpeg"]["video_to_frames"]['output_options'],

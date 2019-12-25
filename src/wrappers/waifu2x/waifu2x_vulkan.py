@@ -138,7 +138,7 @@ class Waifu2xVulkan(threading.Thread):
 
         # make a list of names that will eventually (past or future) be upscaled
         list_of_names = []
-        for x in range(1, self.frame_count):
+        for x in range(100, self.frame_count):
             list_of_names.append("output_" + get_lexicon_value(6, x) + ".png")
 
         for x in range(len(list_of_names)):
@@ -173,7 +173,7 @@ class Waifu2xVulkan(threading.Thread):
         """
 
         file_names = []
-        for x in range(1, self.frame_count):
+        for x in range(100, self.frame_count):
             file_names.append("output_" + get_lexicon_value(6, x))
 
         for file in file_names:

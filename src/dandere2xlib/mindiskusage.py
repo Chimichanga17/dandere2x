@@ -39,7 +39,7 @@ class MinDiskUsage:
         When it does, delete the used files and extract the needed frame.
         """
         logger = logging.getLogger(__name__)
-        for x in range(1, self.frame_count - self.context.max_frames_ahead + 1):
+        for x in range(100, self.frame_count - self.context.max_frames_ahead + 1):
             logger.info("on frame x: " + str(x))
             # wait for signal to get ahead of MinDiskUsage
             while x >= self.context.signal_merged_count:
