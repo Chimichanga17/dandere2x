@@ -101,13 +101,14 @@ class Frame:
         self.width = self.frame.shape[1]
         self.string_name = input_string
 
-    # Wait on a file if it does not exist yet.
+    # Wait on a file if it does not exist yet. Wait can be cancelled via a cancellation token
+    from dandere2xlib.utils.thread_utils import CancellationToken
+    def load_from_string_wait(self, input_string, cancel_token=CancellationToken()):
 
-    def load_from_string_wait(self, input_string):
         logger = logging.getLogger(__name__)
         exists = exists = os.path.isfile(input_string)
         count = 0
-        while not exists:
+        while not exists and not cancel_token.is_cancelled:
             if count % 10000 == 0:
                 logger.info(input_string + " dne")
             exists = os.path.isfile(input_string)
@@ -115,7 +116,7 @@ class Frame:
             time.sleep(.2)
 
         loaded = False
-        while not loaded:
+        while not loaded and not cancel_token.is_cancelled:
             try:
                 self.load_from_string(input_string)
                 loaded = True
@@ -197,7 +198,7 @@ class Frame:
             raise ValueError('invalid copy image')
 
         copy_from(frame_other.frame, self.frame, (0, 0), (0, 0),
-                  (frame_other.frame.shape[1], frame_other.frame[1].shape[0]))
+                  (frame_other.frame.shape[0], frame_other.frame.shape[1]))
 
     def copy_block(self, frame_other, block_size, other_x, other_y, this_x, this_y):
         """
