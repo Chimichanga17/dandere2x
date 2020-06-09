@@ -1,8 +1,8 @@
 dandere2x:
   usersettings:
 
-    input_file: ../workspace/yn_moving.mkv # the input file to upscale if ran on raw_config drivers
-    output_file: ../workspace/vulkan_test.mkv #the output ot the upscaled video file.
+    input_file: /home/sylvia/Projects/dandere2x/testing/240p.mp4 # the input file to upscale if ran on raw_config drivers
+    output_file: /home/sylvia/Projects/dandere2x/testing/upscaled-240p.mp4    #the output ot the upscaled video file.
     input_folder: ../workspace/multiple_videos/
     output_folder: ../workspace/multiple_videos_output/
 
